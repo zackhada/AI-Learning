@@ -36,7 +36,52 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 
 ---
 
-## Attention Mechanism (Partial)
+## Transformer Architecture
+
+### Transformer Block (Layer)
+- Components: attention + MLP + layer norm + residual connections
+- "70B parameters" = weights in MLP layers, attention projections (Wq, Wk, Wv, Wo), and embeddings
+- "32 layers" = 32 stacked transformer blocks
+
+### Residual Connections
+- Output is `x + sublayer(x)` instead of just `sublayer(x)`
+- Allows gradients to flow directly during backprop
+- Prevents vanishing gradients in deep networks
+- **Gap**: Had intuition but not exact mechanism
+
+### Positional Encoding
+- Position encoded into token vector before entering transformer
+- Types: sinusoidal (fixed), learned, RoPE (rotates vectors by position)
+
+### Why Transformers Beat RNNs
+- RNNs process tokens sequentially (can't compute token 5 until 1-4 done)
+- Transformers use attention to see all tokens at once → parallel training on GPUs
+
+### Encoder vs Decoder
+- **Encoder**: Sees all tokens bidirectionally (BERT) — good for understanding
+- **Decoder**: Sees only previous tokens, causal (GPT, Claude) — good for generation
+- Modern LLMs are decoder-only
+- Encoders still used for embeddings in RAG systems
+
+### Causal Masking
+- **Gap**: Didn't cover this — prevents decoder from seeing future tokens during training
+
+### Next Token Prediction
+- Training: predict next token, compare to actual, backprop
+- Batches contain sequences at multiple positions, all computed in parallel
+- Each position only sees tokens before it
+- Objective: minimize cross-entropy loss between predicted and actual
+
+### Softmax
+- Converts vector to probability distribution (sums to 1)
+- Formula: `softmax(x_i) = e^(x_i) / Σ e^(x_j)`
+- Exponentials make larger values much larger relative to smaller ones
+- Used in attention (weights) and output layer (token probabilities)
+- **Correction**: Not just scaling to 0-1, it's exponential normalization
+
+---
+
+## Attention Mechanism
 
 ### What I Know
 - Q (query): what to look for
@@ -45,10 +90,12 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - Multiple attention heads learn different relationships
 - Q/K/V learned through backprop
 
+### Self vs Cross Attention (Learned)
+- **Self-attention**: Q, K, V all from same sequence
+- **Cross-attention**: Q from one sequence, K/V from another (e.g., decoder attending to encoder)
+
 ### Gaps
-- √d_k scaling purpose
-- Softmax role in attention
-- Self-attention vs cross-attention (Q/K/V same sequence vs different sequences)
+- √d_k scaling purpose (prevents softmax saturation — still need to internalize)
 
 ---
 
@@ -78,8 +125,6 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 ### What I Know
 - Store embeddings as high-dimensional vectors
 - Optimized for similarity search (nearest neighbors)
-
-### Learned This Session
 - Use specialized algorithms (HNSW, IVF) for efficient search
 - Different from regular DBs which use exact matching and B-tree indexes
 - Snowflake Cortex Search handles this internally
@@ -105,8 +150,6 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - Have access to tools (APIs, MCPs, functions)
 - Follow custom instructions
 - Key distinction: the **loop** — observe → reason → act → repeat
-
-### Learned This Session
 - Simple LLM call is one-shot; agents iterate until goal is met
 - Tools = functions to interact with external systems
 
@@ -123,17 +166,31 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 
 ---
 
-## LLM Parameters
+## LLM Parameters & Training
 
 ### Temperature
 - Controls output variation/randomness
 - **Low temperature** (→0): picks most probable tokens, deterministic
 - **High temperature**: flattens distribution, more random/creative
-- **Correction**: I had this backwards initially
 
-### Context Window
-- Maximum tokens model can process at once
-- When exceeded, options: truncation, re-ranking, summarization
+### Context Window vs Training Data
+- **Training data** (trillions of tokens): total text across many examples
+- **Context window** (e.g., 128K): max tokens in single input/output
+- Separate concepts — train on many short sequences, inference handles long ones
+- Context window length is trained (model learns to handle it)
+
+### Pre-training vs Fine-tuning
+- **Pre-training**: Next token prediction on massive text corpus
+- **Fine-tuning**: Adjust behavior with curated examples
+- Types: instruction tuning, RLHF, SFT (supervised fine-tuning)
+
+### Parameters
+- Weights in: MLP layers (W1, W2, biases), attention projections (Wq, Wk, Wv, Wo), embeddings
+- Stored as floating point numbers in GPU memory
+
+### Inference Cost
+- More parameters = more matrix multiplications per token
+- Costs: GPU memory (load all parameters), compute (FLOPs), KV cache (grows with context)
 
 ---
 
@@ -142,7 +199,6 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 ### Latency vs Throughput
 - **Latency**: time for one request (prompt → response)
 - **Throughput**: requests per second system can handle
-- NOT about context window size
 
 ### Guardrails
 - Constraints to keep AI safe and compliant
@@ -168,12 +224,10 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 # Concepts to Learn
 
 ## Priority (foundational gaps)
-- [ ] Self-attention vs cross-attention
 - [ ] Why √d_k scaling in attention
-- [ ] Softmax role in attention
-- [ ] Loss functions (cross-entropy, etc.)
+- [ ] Causal masking mechanics
+- [ ] Loss functions (cross-entropy details)
 - [ ] Gradient descent mechanics
-- [ ] Why transformers beat RNNs (parallelization)
 
 ## Enterprise AI
 - [ ] Chunk size optimization
@@ -183,11 +237,11 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - [ ] Evaluation metrics for RAG
 
 ## Advanced
-- [ ] RLHF / alignment
+- [ ] RLHF / alignment details
 - [ ] Fine-tuning techniques (LoRA, etc.)
 - [ ] Scaling laws
 - [ ] MoE architectures
-- [ ] Inference optimization
+- [ ] Inference optimization (quantization, KV cache)
 
 ---
 
@@ -199,10 +253,18 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - Reset knowledge base with validated self-assessment
 - **Session 1 topics**: NN basics, backprop, tokens, embeddings, attention Q/K/V
 - **Session 2 topics**: RAG, vector databases, agents, Cortex, temperature, guardrails
+- **Session 3 topics**: Transformer architecture, residual connections, positional encoding, RNNs vs transformers, next token prediction, softmax, parameters, inference cost, pre-training vs fine-tuning
 - **Corrections made**:
   - Temperature (had backwards — low = deterministic)
   - Keyword search uses inverted indexes, not regex
   - Throughput = requests/sec, not context size
   - RAG grounds in docs but doesn't verify truth
+  - Softmax is exponential normalization, not simple 0-1 scaling
+  - Context window ≠ batch size during training
+- **Concepts clarified**:
+  - Self-attention vs cross-attention
+  - Encoder vs decoder (and why decoder-only for LLMs)
+  - Residual connection mechanism
+  - Why transformers parallelize better than RNNs
 
 ---
