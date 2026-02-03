@@ -142,10 +142,33 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - Chunking matters for precision, not just context window limits
 - Smaller chunks = more specific embeddings = better retrieval
 
-### Gaps
-- Chunk size optimization strategies
-- Hybrid search (semantic + keyword) trade-offs
-- Re-ranking techniques
+### Chunk Size Optimization
+- Trade-off: small chunks (precise embeddings) vs large chunks (preserves context)
+- Too small: lose context across chunk boundaries
+- Too large: embeddings become diluted (weakly match many topics)
+- Strategies: overlapping chunks, semantic chunking (split at natural boundaries), parent-child retrieval
+- Legal/dense docs → larger chunks (500-800 tokens); Q&A → smaller (100-200 tokens)
+
+### Hybrid Search
+- Combines semantic search + keyword search
+- Semantic wins: meaning-based queries ("How do I return an item?")
+- Keyword wins: exact identifiers (SKUs, error codes, invoice numbers)
+- Score combination: weighted sum or Reciprocal Rank Fusion (RRF)
+- Tune weights based on use case (technical support → keyword-heavy)
+
+### Re-ranking
+- Second pass to reorder retrieved results before giving to LLM
+- Why: embedding similarity is fast but coarse; re-ranker is slow but precise
+- Cross-encoder: processes (query + document) together, outputs relevance score
+- Can't use cross-encoder for initial retrieval — too slow for millions of docs
+- Workflow: retrieve top 50 (fast) → re-rank → return top 5 to LLM
+
+### RAG Evaluation Metrics
+- Measure retrieval AND generation separately
+- **Retrieval**: Recall@K (% of relevant chunks retrieved), Precision@K, MRR
+- **Generation**: Faithfulness (grounded in context?), Answer relevance, Correctness
+- If retrieval good but answers bad → LLM problem (lower temp, better prompt)
+- If retrieval bad → fix chunking, embeddings, or search strategy
 
 ---
 
@@ -233,6 +256,13 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - Constraints to keep AI safe and compliant
 - Types: input (block injection), output (filter harmful content, prevent PII leakage), topic restrictions, human-in-the-loop
 
+### Prompt Injection Defense
+- **Direct injection**: User types malicious instructions ("ignore previous instructions...")
+- **Indirect injection**: Malicious content in retrieved documents (more dangerous)
+- Why indirect is worse: user unaware, trusted source, scales to all users
+- Defense layers: input filtering, clear prompt delimiters, output filtering, least privilege, human-in-the-loop
+- No perfect defense — LLMs process instructions and data the same way (as tokens)
+
 ### Prompt Engineering
 - Curating prompts for desired output
 - Techniques: few-shot examples, chain-of-thought, role assignment
@@ -259,11 +289,11 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - [x] Gradient descent mechanics
 
 ## Enterprise AI
-- [ ] Chunk size optimization
-- [ ] Hybrid search strategies
-- [ ] Re-ranking techniques
-- [ ] Prompt injection defense
-- [ ] Evaluation metrics for RAG
+- [x] Chunk size optimization
+- [x] Hybrid search strategies
+- [x] Re-ranking techniques
+- [x] Prompt injection defense
+- [x] Evaluation metrics for RAG
 
 ## Advanced
 - [ ] RLHF / alignment details
@@ -288,6 +318,10 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - **Session 3 topic**: √d_k scaling in attention
 - **Learned**: Dot products grow with dimension → softmax saturates → tiny gradients → divide by √d_k to fix
 - **All priority foundational gaps now complete**
+- **Session 4 topic**: Enterprise AI (chunk optimization, hybrid search, re-ranking, prompt injection, RAG evaluation)
+- **Learned**: Chunk size trade-offs, hybrid search for exact vs semantic, re-ranking as second pass, indirect injection dangers, measuring retrieval vs generation
+- **Validated understanding**: Legal docs need large chunks, invoice lookup needs keyword search, cross-encoder too slow for initial retrieval, good retrieval + bad answers = LLM problem
+- **All enterprise AI gaps now complete**
 
 ### Feb 2
 - Reset knowledge base with validated self-assessment
