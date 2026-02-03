@@ -1,5 +1,5 @@
 # AI & ML Knowledge Base
-*Last updated: February 2, 2026*
+*Last updated: February 3, 2026*
 
 ---
 
@@ -18,7 +18,26 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 
 ### Backpropagation
 - Weights updated based on comparing predicted vs actual output
-- **Gap**: Mechanism details (gradients, chain rule, gradient descent)
+- Uses gradient descent to determine how to update each weight
+
+### Gradient Descent
+- Algorithm to minimize loss by iteratively adjusting weights
+- `new_weight = old_weight - learning_rate × gradient`
+- We subtract because gradient points uphill (toward higher loss), we want downhill
+- Learning rate controls step size (too small = slow, too large = overshoots)
+
+### Gradient
+- The gradient tells you: "How much would loss change if I nudge this weight, and in which direction?"
+- Positive gradient → increasing weight increases loss → decrease the weight
+- Negative gradient → increasing weight decreases loss → increase the weight
+- Magnitude indicates sensitivity (gradient of 5 matters more than 0.001)
+
+### Loss Function
+- A number measuring how wrong the model is (lower = better)
+- For LLMs: cross-entropy loss = `-log(probability of correct token)`
+- Punishes low confidence in correct answer harshly (1% confidence → high loss)
+- 99% confident in right answer → loss ≈ 0.01
+- 1% confident in right answer → loss ≈ 4.6
 
 ### Tokens
 - Text encoded to numbers for matrix multiplication
@@ -226,8 +245,8 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 ## Priority (foundational gaps)
 - [ ] Why √d_k scaling in attention
 - [ ] Causal masking mechanics
-- [ ] Loss functions (cross-entropy details)
-- [ ] Gradient descent mechanics
+- [x] Loss functions (cross-entropy details)
+- [x] Gradient descent mechanics
 
 ## Enterprise AI
 - [ ] Chunk size optimization
@@ -248,6 +267,11 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 # Learning Log
 
 ## February 2026
+
+### Feb 3
+- **Session topic**: Gradient descent and loss functions
+- **Learned**: Gradient = sensitivity + direction for each weight, loss = wrongness measure, cross-entropy for LLMs
+- **Validated understanding**: Correctly answered why we subtract gradient, which model has higher loss, what gradient tells you
 
 ### Feb 2
 - Reset knowledge base with validated self-assessment
