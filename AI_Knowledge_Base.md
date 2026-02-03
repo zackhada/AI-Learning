@@ -83,7 +83,12 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - Encoders still used for embeddings in RAG systems
 
 ### Causal Masking
-- **Gap**: Didn't cover this — prevents decoder from seeing future tokens during training
+- Prevents decoder from seeing future tokens during training
+- Triangular mask: position N can only attend to positions 1 through N
+- Mechanism: add -infinity to attention scores for future positions
+- Softmax turns e^(-infinity) = 0 → those positions contribute nothing
+- Why not just "tell" the model? Neural nets are math — can only manipulate numbers, not give instructions
+- During inference: mask still applied but redundant (future tokens don't exist yet)
 
 ### Next Token Prediction
 - Training: predict next token, compare to actual, backprop
@@ -244,7 +249,7 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 
 ## Priority (foundational gaps)
 - [ ] Why √d_k scaling in attention
-- [ ] Causal masking mechanics
+- [x] Causal masking mechanics
 - [x] Loss functions (cross-entropy details)
 - [x] Gradient descent mechanics
 
@@ -269,9 +274,12 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 ## February 2026
 
 ### Feb 3
-- **Session topic**: Gradient descent and loss functions
+- **Session 1 topic**: Gradient descent and loss functions
 - **Learned**: Gradient = sensitivity + direction for each weight, loss = wrongness measure, cross-entropy for LLMs
 - **Validated understanding**: Correctly answered why we subtract gradient, which model has higher loss, what gradient tells you
+- **Session 2 topic**: Causal masking
+- **Learned**: Triangular mask adds -infinity to block future positions, softmax zeros them out
+- **Key insight**: Neural nets are math — can't "tell" them anything, must manipulate numbers
 
 ### Feb 2
 - Reset knowledge base with validated self-assessment
