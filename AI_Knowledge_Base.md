@@ -118,8 +118,13 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - **Self-attention**: Q, K, V all from same sequence
 - **Cross-attention**: Q from one sequence, K/V from another (e.g., decoder attending to encoder)
 
-### Gaps
-- √d_k scaling purpose (prevents softmax saturation — still need to internalize)
+### √d_k Scaling
+- d_k = dimension of key vectors (e.g., 64 per head)
+- Problem: dot products grow larger with more dimensions → softmax saturates
+- Saturated softmax: nearly one-hot [0.999, 0.001, 0, 0] → one token dominates
+- Why bad: when output is insensitive to input changes, gradients are tiny → learning stalls
+- Fix: divide by √d_k before softmax → keeps scores in reasonable range
+- `attention = softmax((Q · K) / √d_k)`
 
 ---
 
@@ -248,7 +253,7 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 # Concepts to Learn
 
 ## Priority (foundational gaps)
-- [ ] Why √d_k scaling in attention
+- [x] Why √d_k scaling in attention
 - [x] Causal masking mechanics
 - [x] Loss functions (cross-entropy details)
 - [x] Gradient descent mechanics
@@ -280,6 +285,9 @@ This document tracks my actual understanding of AI/ML concepts, validated throug
 - **Session 2 topic**: Causal masking
 - **Learned**: Triangular mask adds -infinity to block future positions, softmax zeros them out
 - **Key insight**: Neural nets are math — can't "tell" them anything, must manipulate numbers
+- **Session 3 topic**: √d_k scaling in attention
+- **Learned**: Dot products grow with dimension → softmax saturates → tiny gradients → divide by √d_k to fix
+- **All priority foundational gaps now complete**
 
 ### Feb 2
 - Reset knowledge base with validated self-assessment
